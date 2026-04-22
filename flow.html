@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gajar Ka Halwa – Claude Flow</title>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1a1a;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh;
+    font-family: -apple-system, system-ui, sans-serif;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes blink { 0%,100%{opacity:1}50%{opacity:0} }
+  @keyframes dot { 0%,80%,100%{transform:scale(0.6);opacity:0.4} 40%{transform:scale(1);opacity:1} }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+const BG = '#F0EFEC';
+const TEXT = '#2C2C2C';
+const MUTED = '#8A8A8A';
+const ACCENT = '#C96A3E';
+
+const USER_MSG = "It's my mother's birthday tomorrow and I want to impress her with a homemade gajar ka halwa 🥹 Can you find the ingredients from nearby stores and help me order them?";
+
+const CLAUDE_REPLY = "Aww, what a beautiful idea — homemade gajar ka halwa for your mother's birthday is so thoughtful! 🧡\n\nDon't worry at all, I'll take care of finding everything you need. Let me search across Blinkit to find the freshest ingredients at the best prices for you.";
+
+const INGREDIENTS = [
+  { name: 'Fresh Carrots (Gajar)', qty: '500g', price: 35, store: 'Zepto' },
+  { name: 'Full Cream Milk', qty: '1 litre', price: 68, store: 'Blinkit' },
+  { name: 'Pure Ghee', qty: '100g', price: 85, store: 'Blinkit' },
+  { name: 'Sugar', qty: '200g', price: 22, store: 'Blinkit' },
+  { name: 'Cardamom Powder', qty: '10g', price: 30, store: 'Blinkit' },
+  { name: 'Cashews', qty: '50g', price: 65, store: 'Blinkit' },
+  { name: 'Raisins', qty: '50g', price: 40, store: 'Blinkit' },
+  { name: 'Khoya (Mawa)', qty: '100g', price: 90, store: 'Blinkit' },
+];
+
+const STORE_COLORS = { Zepto: '#8B5CF6', Swiggy: '#FF6900', Blinkit: '#F5D000' };
+
+// ── Shared nav ─────────────────────────────────────────────
+function ClaudeNav() {
+  return (
+    <div style={{ paddingTop: 68, padding: '68px 16px 10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <button style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8 }}>
+        <svg width="22" height="16" viewBox="0 0 22 16" fill="none">
+          <line x1="0" y1="1" x2="22" y2="1" stroke={TEXT} strokeWidth="2" strokeLinecap="round"/>
+          <line x1="0" y1="8" x2="22" y2="8" stroke={TEXT} strokeWidth="2" strokeLinecap="round"/>
+          <line x1="0" y1="15" x2="22" y2="15" stroke={TEXT} strokeWidth="2" strokeLinecap="round"/>
+        </svg>
+      </button>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'center' }}>
+          <span style={{ fontSize: 17, fontWeight: 600, color: TEXT }}>Sonnet 4.6</span>
+          <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+            <path d="M1 1.5l5 5 5-5" stroke={TEXT} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+        <div style={{ fontSize: 13, color: MUTED, marginTop: 1 }}>Adaptive</div>
+      </div>
+      <button style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+        <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(0,0,0,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <svg width="20" height="22" viewBox="0 0 20 22" fill="none">
+            <path d="M10 1C5.58 1 2 4.58 2 9v10l3-2.5 2.5 2.5L10 16.5l2.5 2.5L15 16.5l3 2.5V9c0-4.42-3.58-8-8-8z" stroke={TEXT} strokeWidth="1.6" fill="none"/>
+            <circle cx="7.5" cy="10" r="1.2" fill={TEXT}/><circle cx="12.5" cy="10" r="1.2" fill={TEXT}/>
+          </svg>
+        </div>
+      </button>
+    </div>
+  );
+}
+
+function ClaudeSpark({ size = 44, color = ACCENT }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 44 44" fill="none">
+      {[0,45,90,135].map(deg => (
+        <line key={deg} x1="22" y1="4" x2="22" y2="40" stroke={color} strokeWidth="3.5" strokeLinecap="round" transform={`rotate(${deg} 22 22)`}/>
+      ))}
+    </svg>
+  );
+}
+
+function InputBar({ value, onSend, canSend, placeholder = 'Chat with Claude', showSendActive = false }) {
+  const sendActive = canSend || showSendActive;
+  return (
+    <div style={{ padding: '0 14px 24px' }}>
+      <div style={{ background: 'white', borderRadius: 20, padding: '14px 16px', boxShadow: '0 2px 12px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ minHeight: 22, fontSize: 16, color: value ? TEXT : '#AEAEAE', lineHeight: 1.4 }}>
+          {value || placeholder}
+          {value && <span style={{ animation: 'blink 1s infinite', marginLeft: 1, color: TEXT }}>|</span>}
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <button style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <line x1="12" y1="4" x2="12" y2="20" stroke={TEXT} strokeWidth="2.2" strokeLinecap="round"/>
+              <line x1="4" y1="12" x2="20" y2="12" stroke={TEXT} strokeWidth="2.2" strokeLinecap="round"/>
+            </svg>
+          </button>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <svg width="22" height="26" viewBox="0 0 22 26" fill="none">
+              <rect x="7" y="1" width="8" height="14" rx="4" stroke={TEXT} strokeWidth="1.8"/>
+              <path d="M1 12c0 5.52 4.48 10 10 10s10-4.48 10-10" stroke={TEXT} strokeWidth="1.8" strokeLinecap="round"/>
+              <line x1="11" y1="22" x2="11" y2="26" stroke={TEXT} strokeWidth="1.8" strokeLinecap="round"/>
+            </svg>
+            <div onClick={sendActive ? onSend : null} style={{ width: 36, height: 36, borderRadius: '50%', background: sendActive ? TEXT : '#C8C8C8', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: sendActive ? 'pointer' : 'default', transition: 'background 0.2s' }}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 14L14 8 2 2v4.5l8 1.5-8 1.5V14z" fill="white"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Typing dots ────────────────────────────────────────────
+function TypingDots() {
+  return (
+    <div style={{ display: 'flex', gap: 5, alignItems: 'center', padding: '12px 16px', background: 'white', borderRadius: 20, borderBottomLeftRadius: 5, width: 'fit-content' }}>
+      {[0,1,2].map(i => (
+        <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: '#999', animation: `dot 1.2s ${i*0.2}s infinite` }}/>
+      ))}
+    </div>
+  );
+}
+
+// ── Claude text bubble ─────────────────────────────────────
+function ClaudeBubble({ text }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, animation: 'fadeUp 0.4s ease' }}>
+      <div style={{ width: 28, height: 28, flexShrink: 0, marginTop: 2 }}>
+        <ClaudeSpark size={28} color={ACCENT} />
+      </div>
+      <div style={{ background: 'white', borderRadius: 20, borderBottomLeftRadius: 5, padding: '12px 16px', maxWidth: '85%', fontSize: 15, lineHeight: 1.55, color: TEXT, whiteSpace: 'pre-line' }}>
+        {text}
+      </div>
+    </div>
+  );
+}
+
+// ── Searching state ────────────────────────────────────────
+function SearchingBubble() {
+  const stores = ['Blinkit'];
+  const colors = [STORE_COLORS.Blinkit];
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, animation: 'fadeUp 0.4s ease' }}>
+      <div style={{ width: 28, height: 28, flexShrink: 0, marginTop: 2 }}>
+        <ClaudeSpark size={28} color={ACCENT} />
+      </div>
+      <div style={{ background: 'white', borderRadius: 20, borderBottomLeftRadius: 5, padding: '14px 16px', maxWidth: '85%' }}>
+        <div style={{ fontSize: 14, color: MUTED, marginBottom: 10 }}>Searching for ingredients across</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {stores.map((s, i) => (
+            <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 8, animation: `slideIn 0.3s ${i*0.15}s both` }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: colors[i], flexShrink: 0, animation: 'dot 1.4s infinite' }}/>
+              <span style={{ fontSize: 14, fontWeight: 500, color: TEXT }}>{s}</span>
+              <div style={{ flex: 1, height: 2, borderRadius: 2, background: '#eee', overflow: 'hidden' }}>
+                <div style={{ height: '100%', background: colors[i], borderRadius: 2, animation: `spin 1s linear infinite`, width: '30%' }}/>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Ingredient list ────────────────────────────────────────
+function IngredientList({ onConfirm, disabled }) {
+  const total = INGREDIENTS.reduce((s, i) => s + i.price, 0);
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, animation: 'fadeUp 0.4s ease' }}>
+      <div style={{ width: 28, height: 28, flexShrink: 0, marginTop: 2 }}>
+        <ClaudeSpark size={28} color={ACCENT} />
+      </div>
+      <div style={{ background: 'white', borderRadius: 20, borderBottomLeftRadius: 5, padding: '14px 16px', maxWidth: '88%', width: '88%' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+          <img src="blinkit.png" style={{ height: 22, objectFit: 'contain' }} />
+          <span style={{ fontSize: 15, color: TEXT, fontWeight: 500 }}>Found everything! Here's your list 🥕</span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+          {INGREDIENTS.map((item, i) => (
+            <div key={item.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 0', borderBottom: i < INGREDIENTS.length - 1 ? '1px solid #f0f0f0' : 'none', animation: `fadeUp 0.3s ${i*0.06}s both` }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, color: TEXT, fontWeight: 500 }}>{item.name}</div>
+                <div style={{ fontSize: 12, color: MUTED, marginTop: 1 }}>{item.qty}</div>
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: TEXT, marginLeft: 8 }}>₹{item.price}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1.5px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: 14, fontWeight: 600, color: TEXT }}>Total</span>
+          <span style={{ fontSize: 16, fontWeight: 700, color: TEXT }}>₹{total}</span>
+        </div>
+        <div style={{ fontSize: 13, color: MUTED, marginTop: 6, marginBottom: 14 }}>
+          Does this look good? Should I add everything to cart?
+        </div>
+        <button onClick={disabled ? null : onConfirm} style={{
+          width: '100%', padding: '12px', borderRadius: 14,
+          background: disabled ? '#C8C8C8' : TEXT, color: 'white', border: 'none',
+          fontSize: 15, fontWeight: 600, cursor: disabled ? 'default' : 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          transition: 'background 0.2s',
+        }}>
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M2 2h2l2.5 9h7l2-6H5.5" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+            <circle cx="8" cy="15.5" r="1.2" fill="white"/>
+            <circle cx="13" cy="15.5" r="1.2" fill="white"/>
+          </svg>
+          Add All to Cart
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Screen 1: Home ─────────────────────────────────────────
+function HomeScreen({ onNext }) {
+  const [typed, setTyped] = React.useState('');
+  const [done, setDone] = React.useState(false);
+
+  React.useEffect(() => {
+    const t = setTimeout(() => {
+      let i = 0;
+      const iv = setInterval(() => {
+        i++;
+        setTyped(USER_MSG.slice(0, i));
+        if (i >= USER_MSG.length) { clearInterval(iv); setDone(true); }
+      }, 22);
+      return () => clearInterval(iv);
+    }, 1000);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <div style={{ width: '100%', height: '100%', background: BG, position: 'relative', display: 'flex', flexDirection: 'column' }}>
+      <ClaudeNav />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <ClaudeSpark size={48} />
+        <p style={{ marginTop: 20, fontSize: 28, fontWeight: 500, color: TEXT, textAlign: 'center', lineHeight: 1.25, letterSpacing: -0.5, fontFamily: 'Georgia, serif' }}>
+          How can I help you<br />this evening?
+        </p>
+      </div>
+      <InputBar value={typed} onSend={() => setTimeout(onNext, 300)} canSend={done} />
+    </div>
+  );
+}
+
+// ── Screen 2: Full chat conversation ──────────────────────
+function ChatScreen({ onNext }) {
+  const [state, setState] = React.useState('sent');
+  const [cartAdded, setCartAdded] = React.useState(false);
+  const [cartTyping, setCartTyping] = React.useState(false);
+  const [cartMsg, setCartMsg] = React.useState(false);
+  // payment states
+  const [readyTyping, setReadyTyping] = React.useState(false);
+  const [readyMsg, setReadyMsg] = React.useState(false);
+  const [typedYes, setTypedYes] = React.useState('');
+  const [yesPhase, setYesPhase] = React.useState('idle'); // idle → typing → sent
+  const [payTyping, setPayTyping] = React.useState(false);
+  const [payOptions, setPayOptions] = React.useState(false);
+  const [selectedMethod, setSelectedMethod] = React.useState(null);
+  const [cardSelected, setCardSelected] = React.useState(null);
+  const [showVerify, setShowVerify] = React.useState(false);
+  const scrollRef = React.useRef(null);
+
+  const handleSelectCard = (id) => {
+    setCardSelected(id);
+    setTimeout(() => setShowVerify(true), 600);
+  };
+
+  // ingredient flow
+  React.useEffect(() => {
+    const t1 = setTimeout(() => setState('typing'), 400);
+    const t2 = setTimeout(() => setState('replied'), 2800);
+    const t3 = setTimeout(() => setState('searching'), 3600);
+    const t4 = setTimeout(() => setState('list'), 6200);
+    return () => [t1,t2,t3,t4].forEach(clearTimeout);
+  }, []);
+
+  const handleAddToCart = () => {
+    setCartAdded(true);
+    setTimeout(() => setCartTyping(true), 300);
+    setTimeout(() => { setCartTyping(false); setCartMsg(true); }, 2000);
+    // continue in same chat: Claude asks if ready
+    setTimeout(() => setReadyTyping(true), 3200);
+    setTimeout(() => { setReadyTyping(false); setReadyMsg(true); }, 4800);
+    // user types yes
+    setTimeout(() => setYesPhase('typing'), 6000);
+  };
+
+  // type "Yes, go ahead!"
+  React.useEffect(() => {
+    if (yesPhase !== 'typing') return;
+    const msg = 'Yes, go ahead!';
+    let i = 0;
+    const iv = setInterval(() => {
+      i++;
+      setTypedYes(msg.slice(0, i));
+      if (i >= msg.length) { clearInterval(iv); setTimeout(() => setYesPhase('sent'), 500); }
+    }, 40);
+    return () => clearInterval(iv);
+  }, [yesPhase]);
+
+  React.useEffect(() => {
+    if (yesPhase === 'sent') {
+      setTimeout(() => setPayTyping(true), 400);
+      setTimeout(() => { setPayTyping(false); setPayOptions(true); }, 2000);
+    }
+  }, [yesPhase]);
+
+  const handleSelectMethod = (id) => {
+    setSelectedMethod(id);
+    if (id !== 'card') {
+      setTimeout(() => onNext(id), 1800);
+    }
+  };
+
+  React.useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [state, cartTyping, cartMsg, readyTyping, readyMsg, yesPhase, typedYes, payTyping, payOptions, selectedMethod, cardSelected]);
+
+  return (
+    <div style={{ width: '100%', height: '100%', background: BG, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+      <ClaudeNav />
+      <div ref={scrollRef} style={{ flex: 1, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto', paddingBottom: 16 }}>
+
+        {/* User message */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', animation: 'fadeUp 0.35s ease' }}>
+          <div style={{ background: TEXT, color: 'white', borderRadius: 20, borderBottomRightRadius: 5, padding: '12px 16px', maxWidth: '82%', fontSize: 15, lineHeight: 1.5 }}>
+            {USER_MSG}
+          </div>
+        </div>
+
+        {state === 'typing' && <TypingDots />}
+        {(state === 'replied' || state === 'searching' || state === 'list') && <ClaudeBubble text={CLAUDE_REPLY} />}
+        {state === 'searching' && <SearchingBubble />}
+        {state === 'list' && <IngredientList onConfirm={handleAddToCart} disabled={cartAdded} />}
+
+        {cartTyping && <TypingDots />}
+        {cartMsg && <ClaudeBubble text={"Done! 🛒 All 8 ingredients have been added to your Blinkit cart."} />}
+
+        {readyTyping && <TypingDots />}
+        {readyMsg && <ClaudeBubble text={"Ready to place the order? 🙌"} />}
+
+        {/* User types Yes in input, then sends */}
+        {yesPhase === 'sent' && (
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <div style={{ background: TEXT, color: 'white', borderRadius: 20, borderBottomRightRadius: 5, padding: '12px 16px', maxWidth: '82%', fontSize: 15 }}>
+              {typedYes}
+            </div>
+          </div>
+        )}
+
+        {payTyping && <TypingDots />}
+        {payOptions && <PaymentPicker onSelect={handleSelectMethod} selected={selectedMethod} />}
+        {selectedMethod && (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', animation: 'fadeUp 0.3s ease' }}>
+            <div style={{ background: TEXT, color: 'white', borderRadius: 20, borderBottomRightRadius: 5, padding: '12px 16px', fontSize: 15 }}>
+              {selectedMethod === 'card' ? 'Credit / Debit Card' : selectedMethod === 'upi' ? 'UPI' : 'Net Banking'}
+            </div>
+          </div>
+        )}
+        {selectedMethod === 'card' && <CardPickerBubble onSelect={handleSelectCard} selected={cardSelected} />}
+      </div>
+      <InputBar value={yesPhase === 'typing' ? typedYes : ''} canSend={false} placeholder="Reply to Claude…" showSendActive={yesPhase === 'typing' && typedYes.length === 'Yes, go ahead!'.length} />
+      {showVerify && <VisaVerifySheet onDone={() => { setShowVerify(false); onNext(cardSelected); }} />}
+    </div>
+  );
+}
+
+// ── Payment method picker bubble ──────────────────────────
+function PaymentPicker({ onSelect, selected }) {
+  const methods = [
+    { id: 'card', label: 'Credit / Debit Card', icon: (
+      <svg width="22" height="16" viewBox="0 0 22 16" fill="none">
+        <rect x="1" y="1" width="20" height="14" rx="3" stroke="currentColor" strokeWidth="1.6"/>
+        <rect x="1" y="5" width="20" height="3" fill="currentColor" opacity="0.15"/>
+        <rect x="4" y="10" width="6" height="2" rx="1" fill="currentColor" opacity="0.5"/>
+      </svg>
+    )},
+    { id: 'upi', label: 'UPI', icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M4 10l4 5 8-10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    )},
+    { id: 'netbanking', label: 'Net Banking', icon: (
+      <svg width="22" height="18" viewBox="0 0 22 18" fill="none">
+        <path d="M1 7h20M1 7L11 1l10 6M3 7v9m4-9v9m4-9v9m4-9v9M1 16h20" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+      </svg>
+    )},
+  ];
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, animation: 'fadeUp 0.4s ease' }}>
+      <div style={{ width: 28, height: 28, flexShrink: 0, marginTop: 2 }}>
+        <ClaudeSpark size={28} color={ACCENT} />
+      </div>
+      <div style={{ background: 'white', borderRadius: 20, borderBottomLeftRadius: 5, padding: '14px 16px', maxWidth: '88%', width: '88%' }}>
+        <div style={{ fontSize: 15, color: TEXT, marginBottom: 14, lineHeight: 1.5 }}>
+          Great! 🎉 How would you like to pay for your Blinkit order?
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {methods.map(m => {
+            const isSelected = selected === m.id;
+            return (
+              <button key={m.id} onClick={() => !selected && onSelect(m.id)} style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '12px 14px', borderRadius: 12,
+                border: isSelected ? '2px solid ' + TEXT : '2px solid #eee',
+                background: isSelected ? TEXT : 'white',
+                color: isSelected ? 'white' : TEXT,
+                cursor: selected ? 'default' : 'pointer',
+                transition: 'all 0.2s', textAlign: 'left',
+              }}>
+                <span style={{ color: isSelected ? 'white' : MUTED }}>{m.icon}</span>
+                <span style={{ fontSize: 15, fontWeight: 500 }}>{m.label}</span>
+                {isSelected && (
+                  <svg style={{ marginLeft: 'auto' }} width="18" height="18" viewBox="0 0 18 18" fill="none">
+                    <circle cx="9" cy="9" r="8" stroke="white" strokeWidth="1.5"/>
+                    <path d="M5 9l3 3 5-5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── VISA Face Verify Sheet ─────────────────────────────────
+function VisaVerifySheet({ onDone }) {
+  const [phase, setPhase] = React.useState('idle');
+
+  React.useEffect(() => {
+    const t1 = setTimeout(() => setPhase('scanning'), 300);
+    const t2 = setTimeout(() => setPhase('done'), 2800);
+    const t3 = setTimeout(() => onDone(), 4000);
+    return () => [t1,t2,t3].forEach(clearTimeout);
+  }, []);
+
+  const GREEN = '#34C759';
+  const BLUE = '#1A1F71';
+  const c = phase === 'done' ? GREEN : BLUE;
+
+  return (
+    <>
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 40, borderRadius: 48, backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }} />
+      <div style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 50,
+        background: 'white', borderRadius: '30px 30px 0 0',
+        padding: '12px 32px 60px',
+        animation: 'sheetUp 0.5s cubic-bezier(0.22,1,0.36,1)',
+      }}>
+        <style>{`
+          @keyframes sheetUp { from{transform:translateY(110%)} to{transform:translateY(0)} }
+          @keyframes bracketBlink { 0%,100%{opacity:0.4} 50%{opacity:1} }
+          @keyframes checkDraw { from{stroke-dashoffset:80} to{stroke-dashoffset:0} }
+          @keyframes ringPop { 0%{transform:scale(0.4);opacity:0} 60%{transform:scale(1.1)} 100%{transform:scale(1);opacity:1} }
+          @keyframes faceIn { from{opacity:0;transform:scale(0.9)} to{opacity:1;transform:scale(1)} }
+        `}</style>
+
+        <div style={{ width: 40, height: 4, borderRadius: 2, background: '#e8e8e8', margin: '0 auto 22px' }} />
+
+        <div style={{ textAlign: 'center', marginBottom: 10 }}>
+          <span style={{ fontStyle: 'italic', fontSize: 32, fontWeight: 900, color: BLUE, letterSpacing: -1 }}>VISA</span>
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 18, fontWeight: 700, color: '#0a0a0a' }}>Verify it's you</div>
+          <div style={{ fontSize: 11.5, color: '#bbb', marginTop: 5 }}>auth.visa.com · passkey for 'Visa'</div>
+        </div>
+
+        {/* Face ID icon */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 32 }}>
+          <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+
+            {/* Corner brackets — pulse while scanning */}
+            {["M20 42V20h22","M100 42V20H78","M20 78v22h22","M100 78v22H78"].map((d, i) => (
+              <path key={i} d={d}
+                stroke={c} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"
+                style={{
+                  transition: 'stroke 0.6s ease',
+                  animation: phase === 'scanning' ? `bracketBlink 1.6s ${i*0.2}s ease-in-out infinite` : 'none',
+                  opacity: phase === 'idle' ? 0.3 : 1,
+                }}
+              />
+            ))}
+
+            {/* Face ID icon — minimal dots + smile, appears during scan */}
+            {phase === 'scanning' && (
+              <g style={{ animation: 'faceIn 0.5s ease both' }}>
+                {/* Eyes — two small dots */}
+                <circle cx="46" cy="52" r="3.5" stroke={BLUE} strokeWidth="2.5" fill="none"/>
+                <circle cx="74" cy="52" r="3.5" stroke={BLUE} strokeWidth="2.5" fill="none"/>
+                {/* Nose — short vertical tick */}
+                <path d="M60 58 v6" stroke={BLUE} strokeWidth="2" strokeLinecap="round"/>
+                {/* Smile */}
+                <path d="M47 72 Q60 82 73 72" stroke={BLUE} strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+              </g>
+            )}
+
+            {/* Success — ring + checkmark */}
+            {phase === 'done' && (
+              <g style={{ animation: 'ringPop 0.5s cubic-bezier(0.34,1.4,0.64,1) both' }}>
+                <circle cx="60" cy="60" r="32" stroke={GREEN} strokeWidth="2.5" fill="none"/>
+                <path d="M44 60l12 12 22-24"
+                  stroke={GREEN} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"
+                  strokeDasharray="80"
+                  style={{ animation: 'checkDraw 0.4s 0.15s ease both', animationFillMode: 'both' }}
+                />
+              </g>
+            )}
+          </svg>
+        </div>
+
+        <div style={{ textAlign: 'center', marginTop: 12 }}>
+          <div style={{
+            fontSize: 14, fontWeight: phase === 'done' ? 600 : 400,
+            color: phase === 'done' ? GREEN : phase === 'scanning' ? '#666' : '#ccc',
+            transition: 'color 0.5s',
+          }}>
+            {phase === 'idle' ? 'Look at your camera' : phase === 'scanning' ? 'Scanning your face…' : 'Identity Verified'}
+          </div>
+          {phase === 'done' && <div style={{ fontSize: 11, color: '#ccc', marginTop: 4 }}>Redirecting to payment…</div>}
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ── Card picker inside chat bubble ────────────────────────
+function CardPickerBubble({ onSelect, selected }) {
+  const PEEK = 52;
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, animation: 'fadeUp 0.4s ease' }}>
+      <div style={{ width: 28, height: 28, flexShrink: 0, marginTop: 2 }}>
+        <ClaudeSpark size={28} color={ACCENT} />
+      </div>
+      <div style={{ background: 'white', borderRadius: 20, borderBottomLeftRadius: 5, padding: '14px 16px', maxWidth: '88%', width: '88%' }}>
+        <div style={{ fontSize: 15, color: TEXT, marginBottom: 14, lineHeight: 1.5 }}>
+          Here are your saved cards. Which one would you like to use?
+        </div>
+        {/* Stacked cards */}
+        <div style={{ position: 'relative', height: 148 + PEEK * (CARDS.length - 1) + 28, marginBottom: 8 }}>
+          {CARDS.map((card, i) => {
+            const si = selected ? CARDS.findIndex(c => c.id === selected) : -1;
+            const isSelected = selected === card.id;
+            let top = 24 + i * PEEK;
+            if (selected) {
+              if (i === si) top = 24;
+              else if (i < si) top = 0 + i * 14;
+              else top = 24 + 148 + 10 + (i - si - 1) * PEEK;
+            }
+            return (
+              <React.Fragment key={card.id}>
+                {card.recommended && !selected && (
+                  <div style={{
+                    position: 'absolute', left: 0, top: 24 + i * PEEK - 22, zIndex: CARDS.length + 1,
+                    display: 'flex', alignItems: 'center', gap: 5,
+                  }}>
+                    <div style={{ background: '#FFF3CC', border: '1px solid #F5D000', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700, color: '#7A5A00', whiteSpace: 'nowrap' }}>
+                      ⭐ Recommended · Save {card.saving}
+                    </div>
+                  </div>
+                )}
+              <div key={card.id} onClick={() => !selected && onSelect(card.id)} style={{
+                position: 'absolute', left: 0, right: 0, top,
+                height: 148, borderRadius: 14,
+                background: `linear-gradient(135deg, ${card.bg[0]} 0%, ${card.bg[1]} 55%, ${card.bg[2]} 100%)`,
+                boxShadow: isSelected ? '0 12px 30px rgba(0,0,0,0.35)' : '0 4px 14px rgba(0,0,0,0.2)',
+                padding: '14px 16px', boxSizing: 'border-box',
+                display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                cursor: selected ? 'default' : 'pointer',
+                zIndex: isSelected ? 10 : CARDS.length - i,
+                opacity: selected && !isSelected ? 0.45 : 1,
+                transition: 'all 0.4s cubic-bezier(0.34,1.3,0.64,1)',
+                overflow: 'hidden',
+              }}>
+                {/* shine */}
+                <div style={{ position: 'absolute', top: -40, right: -20, width: 140, height: 140, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', pointerEvents: 'none' }}/>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <svg width="30" height="23" viewBox="0 0 36 28">
+                    <rect width="36" height="28" rx="4" fill="#D4A843"/>
+                    <rect x="13" y="0" width="10" height="28" fill="#C49830" opacity="0.4"/>
+                    <rect x="0" y="9" width="36" height="10" fill="#C49830" opacity="0.4"/>
+                    <rect x="13" y="9" width="10" height="10" rx="1" fill="#B8882A"/>
+                  </svg>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>{card.bank}</div>
+                </div>
+                <div style={{ fontFamily: 'monospace', fontSize: 15, color: 'rgba(255,255,255,0.85)', letterSpacing: 2 }}>
+                  •••• •••• •••• {card.last4}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                  <div>
+                    <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.45)', letterSpacing: 1 }}>CARD HOLDER</div>
+                    <div style={{ fontSize: 12, color: 'white', fontWeight: 600, letterSpacing: 1 }}>KUSHAL JAIN</div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {isSelected && (
+                      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                        <circle cx="9" cy="9" r="8" stroke="white" strokeWidth="1.5"/>
+                        <path d="M5 9l3 3 5-5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    )}
+                    <div style={{ fontStyle: 'italic', fontSize: 18, fontWeight: 800, color: 'white', letterSpacing: -0.5 }}>VISA</div>
+                  </div>
+                </div>
+                {isSelected && <div style={{ position: 'absolute', inset: 0, borderRadius: 14, border: '2px solid rgba(255,255,255,0.7)', pointerEvents: 'none' }}/>}
+              {!isSelected && card.recommended && <div style={{ position: 'absolute', inset: 0, borderRadius: 14, border: '2px solid #F5D000', boxShadow: '0 0 12px rgba(245,208,0,0.4)', pointerEvents: 'none' }}/>}
+              </div>
+              </React.Fragment>
+            );
+          })}
+        </div>
+        {!selected && <div style={{ fontSize: 12, color: MUTED, textAlign: 'center', paddingTop: 4 }}>Tap to select a card</div>}
+      </div>
+    </div>
+  );
+}
+
+
+const CARDS = [
+  { id: 'icici', bank: 'ICICI Bank',   type: 'Sapphire', last4: '2267', expiry: '11/25', network: 'VISA', bg: ['#0d1b4b', '#1a3a7c', '#2756b6'], recommended: true, saving: '9%' },
+  { id: 'sbi',   bank: 'SBI Card',    type: 'Elite',    last4: '8834', expiry: '03/26', network: 'VISA', bg: ['#003d1f', '#005c2e', '#007a3d'] },
+  { id: 'fed',   bank: 'Federal Bank',type: 'Signet',   last4: '4521', expiry: '08/27', network: 'VISA', bg: ['#1a1a1a', '#2d2d2d', '#404040'] },
+];
+
+function CreditCard({ card, offsetY, scale, zIndex, isSelected, onClick, dim }) {
+  const [bg1, bg2, bg3] = card.bg;
+  return (
+    <div onClick={onClick} style={{
+      position: 'absolute', top: offsetY, left: '50%',
+      transform: `translateX(-50%) scale(${scale})`,
+      transformOrigin: 'top center',
+      zIndex, transition: 'all 0.45s cubic-bezier(0.34,1.56,0.64,1)',
+      width: 300, height: 180, borderRadius: 18,
+      cursor: 'pointer', opacity: dim ? 0.5 : 1,
+    }}>
+      {/* Card body */}
+      <div style={{
+        width: '100%', height: '100%', borderRadius: 18,
+        background: `linear-gradient(135deg, ${bg1} 0%, ${bg2} 50%, ${bg3} 100%)`,
+        boxShadow: isSelected
+          ? '0 20px 50px rgba(0,0,0,0.4)'
+          : '0 8px 24px rgba(0,0,0,0.25)',
+        padding: '18px 22px', boxSizing: 'border-box',
+        display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+        position: 'relative', overflow: 'hidden',
+      }}>
+        {/* Shine overlay */}
+        <div style={{
+          position: 'absolute', top: -60, right: -40,
+          width: 200, height: 200, borderRadius: '50%',
+          background: 'rgba(255,255,255,0.06)',
+          pointerEvents: 'none',
+        }}/>
+        {/* Top row */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          {/* Chip */}
+          <svg width="36" height="28" viewBox="0 0 36 28">
+            <rect width="36" height="28" rx="4" fill="#D4A843"/>
+            <rect x="13" y="0" width="10" height="28" fill="#C49830" opacity="0.4"/>
+            <rect x="0" y="9" width="36" height="10" fill="#C49830" opacity="0.4"/>
+            <rect x="13" y="9" width="10" height="10" rx="1" fill="#B8882A"/>
+          </svg>
+          {/* NFC */}
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            {[6,10,14].map((r,i) => (
+              <path key={i} d={`M14 11 A${r} ${r} 0 0 1 ${14-r*0.5} ${11+r*0.866}`} stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" fill="none"/>
+            ))}
+          </svg>
+        </div>
+        {/* Card number */}
+        <div style={{ fontFamily: 'monospace', fontSize: 17, color: 'rgba(255,255,255,0.9)', letterSpacing: 3, fontWeight: 500 }}>
+          •••• •••• •••• {card.last4}
+        </div>
+        {/* Bottom row */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+          <div>
+            <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)', letterSpacing: 1, marginBottom: 3 }}>CARD HOLDER</div>
+            <div style={{ fontSize: 13, color: 'white', fontWeight: 600, letterSpacing: 1.5 }}>KUSHAL JAIN</div>
+            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>
+              <span style={{ fontSize: 8, opacity: 0.6 }}>VALID THRU </span>{card.expiry}
+            </div>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', marginBottom: 2 }}>{card.bank}</div>
+            {card.network === 'VISA' ? (
+              <div style={{ fontStyle: 'italic', fontSize: 22, fontWeight: 800, color: 'white', letterSpacing: -1 }}>VISA</div>
+            ) : (
+              <div style={{ display: 'flex' }}>
+                <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#EB001B', opacity: 0.9 }}/>
+                <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#F79E1B', marginLeft: -10, opacity: 0.9 }}/>
+              </div>
+            )}
+          </div>
+        </div>
+        {/* Selected ring */}
+        {isSelected && (
+          <div style={{
+            position: 'absolute', inset: 0, borderRadius: 18,
+            border: '2.5px solid rgba(255,255,255,0.8)',
+            pointerEvents: 'none',
+          }}/>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CardSelectionScreen({ onNext }) {
+  const [selected, setSelected] = React.useState(null);
+  const CARD_H = 180;
+  const STACK_GAP = 44;
+
+  const getOffset = (i) => {
+    if (selected === null) return i * STACK_GAP;
+    const si = CARDS.findIndex(c => c.id === selected);
+    if (i === si) return 0;
+    if (i < si) return -(CARD_H * 0.3) + i * 16;
+    return CARD_H + 20 + (i - si - 1) * STACK_GAP;
+  };
+
+  const handleSelect = (id) => {
+    setSelected(id);
+    setTimeout(() => onNext(id), 1600);
+  };
+
+  return (
+    <div style={{ width: '100%', height: '100%', background: BG, display: 'flex', flexDirection: 'column' }}>
+      <ClaudeNav />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '20px 16px' }}>
+        <div style={{ fontSize: 22, fontWeight: 700, color: TEXT, marginBottom: 4 }}>Choose a card</div>
+        <div style={{ fontSize: 14, color: MUTED, marginBottom: 32 }}>Select a saved card to pay ₹435</div>
+        {/* Stacked cards */}
+        <div style={{ position: 'relative', height: CARD_H + STACK_GAP * (CARDS.length - 1) + 40, flex: 1 }}>
+          {CARDS.map((card, i) => (
+            <CreditCard
+              key={card.id}
+              card={card}
+              offsetY={getOffset(i)}
+              scale={selected === card.id ? 1 : selected ? 0.96 : 1}
+              zIndex={selected === card.id ? 10 : CARDS.length - i}
+              isSelected={selected === card.id}
+              dim={selected !== null && selected !== card.id}
+              onClick={() => !selected && handleSelect(card.id)}
+            />
+          ))}
+        </div>
+        <div style={{ fontSize: 13, color: MUTED, textAlign: 'center', marginTop: 'auto', paddingBottom: 40 }}>
+          Tap a card to select
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── App ────────────────────────────────────────────────────
+function App() {
+  const [screen, setScreen] = React.useState(0);
+  return (
+    <IOSDevice width={390} height={844} dark={false}>
+      {screen === 0 && <HomeScreen onNext={() => setScreen(1)} />}
+      {screen === 1 && <ChatScreen onNext={() => setScreen(2)} />}
+      {screen === 2 && (
+        <div style={{ width: '100%', height: '100%', background: BG, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center', color: TEXT, fontSize: 18, fontWeight: 500, padding: 32 }}>
+            ✅ Payment step coming…
+          </div>
+        </div>
+      )}
+    </IOSDevice>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
